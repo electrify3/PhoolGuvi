@@ -7,10 +7,28 @@
   "host_permissions": ["*://*.guvi.in/*"],
   "content_scripts": [
     {
-      "matches": ["*://*.guvi.in/courses-video/*"],
+      "matches": [
+        "*://*.guvi.in/courses-video*",
+        "*://*.guvi.in/courses-video/*"
+      ],
+      "css": ["style.css"],
+      "js": ["hud-loader.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.guvi.in/courses-video*",
+        "*://*.guvi.in/courses-video/*"
+      ],
       "js": ["engine.js"],
       "run_at": "document_idle",
       "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["hud.html", "style.css"],
+      "matches": ["*://*.guvi.in/*"]
     }
   ]
 }

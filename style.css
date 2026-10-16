@@ -1,0 +1,107 @@
+#guvi-v3-hud,
+#guvi-v3-hud * {
+    box-sizing: border-box;
+}
+
+#guvi-v3-hud {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2147483647;
+    width: 320px;
+    padding: 14px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #f8fafc;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    user-select: none;
+}
+
+.guvi-v3-header,
+.guvi-v3-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.guvi-v3-header {
+    margin-bottom: 10px;
+}
+
+.guvi-v3-header strong {
+    color: #10b981;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+#guvi-v3-toggle {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 5px;
+    background: #10b981;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.2s ease;
+}
+
+#guvi-v3-toggle:hover {
+    filter: brightness(1.1);
+}
+
+.guvi-v3-controls {
+    margin-bottom: 8px;
+}
+
+.guvi-v3-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #f8fafc;
+    font-size: 12px;
+}
+
+#guvi-v3-speed {
+    padding: 2px 6px;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    background: #1e293b;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+}
+
+#guvi-v3-lesson {
+    margin-bottom: 4px;
+    overflow: hidden;
+    color: #38bdf8;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+#guvi-v3-status {
+    margin-bottom: 6px;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+#guvi-v3-log {
+    max-height: 85px;
+    overflow-y: auto;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #1e293b;
+    color: #fde047;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    word-break: break-all;
+    white-space: pre-wrap;
+}

@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    let isRunning = true;
+    let isRunning = false;
     let instantVideoBypass = true;
     let targetSpeed = 16.0;
     let isBusy = false;

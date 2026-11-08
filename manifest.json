@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "GUVI Direct API Auto-Solver (v3.0)",
-  "version": "3.0",
-  "description": "Directly uses GUVI's internal authorize.ajax & CourseContent APIs to instant-complete videos, solve quizzes in <1s, and auto-advance.",
+  "name": "PhoolGuvi — GUVI Auto-Solver & CodeKata Helper",
+  "version": "3.1",
+  "description": "Auto-completes GUVI videos, solves quizzes in <1s, auto-advances lessons, and provides a code paste helper for CodeKata challenges.",
   "permissions": ["storage"],
   "host_permissions": ["*://*.guvi.in/*"],
   "content_scripts": [
@@ -21,6 +21,17 @@
         "*://*.guvi.in/courses-video/*"
       ],
       "js": ["engine.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://*.guvi.in/code-kata*",
+        "*://*.guvi.in/code-kata/*",
+        "*://*.guvi.in/codekata*",
+        "*://*.guvi.in/codekata/*"
+      ],
+      "js": ["codekata.js"],
       "run_at": "document_idle",
       "world": "MAIN"
     }

@@ -1,18 +1,20 @@
 {
   "manifest_version": 3,
   "name": "PhoolGuvi — GUVI Auto-Solver & CodeKata Helper",
-  "version": "3.1",
-  "description": "Auto-completes GUVI videos, solves quizzes in <1s, auto-advances lessons, and provides a code paste helper for CodeKata challenges.",
-  "permissions": ["storage"],
+  "version": "3.2",
+  "description": "Auto-solves GUVI course assessments and provides a CodeKata code paste tool via Chrome Side Panel.",
+  "permissions": ["storage", "sidePanel", "activeTab"],
   "host_permissions": ["*://*.guvi.in/*"],
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": [
-        "*://*.guvi.in/courses-video*",
-        "*://*.guvi.in/courses-video/*"
-      ],
-      "css": ["style.css"],
-      "js": ["hud-loader.js"],
+      "matches": ["*://*.guvi.in/*"],
+      "js": ["content/bridge.js"],
       "run_at": "document_idle"
     },
     {
@@ -20,7 +22,7 @@
         "*://*.guvi.in/courses-video*",
         "*://*.guvi.in/courses-video/*"
       ],
-      "js": ["engine.js"],
+      "js": ["content/engine.js"],
       "run_at": "document_idle",
       "world": "MAIN"
     },
@@ -31,15 +33,10 @@
         "*://*.guvi.in/codekata*",
         "*://*.guvi.in/codekata/*"
       ],
-      "js": ["codekata.js"],
+      "js": ["content/codekata-engine.js"],
       "run_at": "document_idle",
       "world": "MAIN"
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["hud.html", "style.css"],
-      "matches": ["*://*.guvi.in/*"]
-    }
-  ]
+  "action": {}
 }

@@ -1,18 +1,98 @@
-# GUVI Direct API Auto-Solver Extension (v3.0)
+# PhoolGuvi — GUVI Auto-Solver & CodeKata Helper (v3.2)
 
-Built directly from GUVI's internal `course_content.js`, `steroid.js`, and `learnable.js`.
+A Chrome/Edge extension that hooks into GUVI's internal page APIs to automate course completion and provide a code paste tool for CodeKata challenges — all from a sleek React-powered side panel.
 
-The floating control panel markup is in `hud.html` and its styles are in `style.css`. `hud-loader.js` runs in the isolated content-script world to inject extension stylesheets and provide the template to `engine.js`; `engine.js` runs in the page's `MAIN` world so it can seamlessly call GUVI's internal page APIs (`window.authorize`, `window.CourseContent`, jQuery).
+---
 
-## Architecture & How It Works
-1. **Direct Video Completion (`type: 'video-activity'`)**: Calls `authorize.invisibleAjax({ type: 'video-activity', courseId, sublessonId, level }, 'courseContent')` directly (the exact API inside `course_content.js` lines 371-380) to immediately mark the video as watched and unlock the Activity quiz without waiting for the timer.
-2. **Direct Quiz Validation (`type: 'validate-quiz'`)**: Instead of fighting Bootstrap radio buttons, v3.0 populates `$('.quizstorage').data()` directly (where `course_content.js` line 1255 reads answers from) and calls `authorize.invisibleAjax({ type: 'validate-quiz', courseId, sublessonId, quizData }, 'courseContent')`.
-3. **1-Second Answer Discovery (`data.result`)**: GUVI's `validate-quiz` response returns `data.result` (e.g. `["1", "0"]`), where `"1"` means Correct and `"0"` means Wrong (`course_content.js` lines 1265-1285). v3.0 locks in every `"1"` and increments only the `"0"` questions, solving any multi-question quiz in 1-3 seconds.
-4. **Native Auto-Advance (`CourseContent.renderCourse(data)`)**: When all quiz answers are correct, GUVI's `validate-quiz` response returns the next lesson object and updated syllabus array (`data[0].validated`). v3.0 passes that directly to `new CourseContent().renderCourse(data)` and auto-dismisses the Geekoins popup modal (`#preassessmentCompletionModal`).
-5. **Resilient HUD Injection**: `hud-loader.js` injects the stylesheet and broadcasts `hud.html`. `engine.js` incorporates fallback markup and query selectors to guarantee the HUD always appears reliably without timing or parsing errors.
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Chrome Side Panel (React)                          │
+│  index.html → App.jsx                              │
+│    ├─ AutoSolverPanel — toggle, settings, log       │
+│    └─ CodeKataPanel — paste code, inject             │
+├──────────── chrome.runtime messages ────────────────┤
+│  Background Service Worker                          │
+│  background.js                                      │
+│    └─ Relays messages: side panel ↔ content scripts │
+├──────────── chrome.tabs.sendMessage ────────────────┤
+│  ISOLATED world (content script)                    │
+│  content/bridge.js                                  │
+│    ├─ Detects page type (courses-video / codekata)  │
+│    └─ Relays: chrome.runtime ↔ window.postMessage   │
+├──────────── window.postMessage ─────────────────────┤
+│  MAIN world (page context)                          │
+│  content/engine.js         (courses-video pages)    │
+│    ├─ Wraps authorize.ajax in Promises              │
+│    ├─ Completes video via API (or 16× fallback)     │
+│    ├─ Solves quiz by iterating answer combos         │
+│    └─ Auto-advances to the next lesson              │
+│  content/codekata-engine.js  (codekata pages)       │
+│    ├─ Detects Ace editor                            │
+│    └─ Injects code on command                       │
+└─────────────────────────────────────────────────────┘
+```
+
+## How It Works
+
+| Step | API Call                  | What Happens                                                                 |
+|------|---------------------------|------------------------------------------------------------------------------|
+| 1    | `type: 'video-activity'`  | Marks the video as watched instantly — no timer wait                         |
+| 2    | `type: 'get-quiz'`        | Fetches quiz questions for the current sublesson                             |
+| 3    | `type: 'validate-quiz'`   | Submits answers; server responds with correct/wrong per question             |
+| 4    | `CourseContent.renderCourse()` | Renders the next lesson using GUVI's own internal method              |
+
+**Quiz strategy:** Start with option 1 for every question → server tells us which are wrong → lock correct ones, rotate wrong ones → solved in 1–3 rounds.
 
 ## Installation
-1. Go to `chrome://extensions/` in Chrome or Edge.
-2. Enable **Developer mode** in the top right.
-3. Click **Load unpacked** and select the folder containing this extension (`PhoolGuvi`).
-4. Navigate to any course video page on GUVI (e.g. `https://www.guvi.in/courses-video?course=...`).
+
+1. Clone or download this repo
+2. Install dependencies and build:
+   ```bash
+   npm install
+   npm run build
+   ```
+3. Open `chrome://extensions/` (or `edge://extensions/`)
+4. Enable **Developer mode**
+5. Click **Load unpacked** → select the **`dist/`** folder
+6. Navigate to any GUVI page → click the extension icon to open the side panel
+
+## Development
+
+```bash
+npm run dev     # Watch mode — rebuilds on file changes
+npm run build   # Production build
+```
+
+After rebuilding, click the reload button on `chrome://extensions/` to pick up changes.
+
+## Project Structure
+
+```
+PhoolGuvi/
+├── src/
+│   └── sidepanel/           # React side panel UI
+│       ├── index.html       # Entry point
+│       ├── main.jsx         # React bootstrap
+│       ├── App.jsx          # Main app (tabs, state, messaging)
+│       ├── styles/
+│       │   └── global.css   # Design system & all styles
+│       └── components/
+│           ├── Header.jsx        # Brand bar + page indicator
+│           ├── TabNav.jsx        # Tab navigation
+│           ├── AutoSolverPanel.jsx  # Video/quiz automation controls
+│           ├── CodeKataPanel.jsx    # Code paste & inject
+│           └── LogConsole.jsx       # Scrollable log display
+├── public/                  # Copied to dist/ as-is by Vite
+│   ├── manifest.json        # Chrome MV3 manifest
+│   ├── background.js        # Service worker
+│   └── content/
+│       ├── bridge.js        # ISOLATED world relay
+│       ├── engine.js        # MAIN world auto-solver
+│       └── codekata-engine.js  # MAIN world code injector
+├── dist/                    # Built output → load as extension
+├── package.json
+├── vite.config.js
+└── README.md
+```
